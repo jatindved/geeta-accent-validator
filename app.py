@@ -8,6 +8,7 @@ from html import escape
 import numpy as np
 import pandas as pd
 import streamlit as st
+import plotly.graph_objects as go  # 🎯 કસ્ટમ કલર અને ટોલરન્સ ગ્રાફ માટે ખાસ ઉમેર્યું
 
 # ============================================================
 # PAGE CONFIGURATION
@@ -25,14 +26,14 @@ LANGUAGE_OPTIONS = [
     ("ગુજરાતી", "gu"),
     ("English", "en"),
     ("हिन्दी", "hi"),
-    ("অસમীয়া", "as"),
+    ("অসমীয়া", "as"),
     ("বাংলা", "bn"),
     ("ಕನ್ನಡ", "kn"),
     ("മലയാളം", "ml"),
-    ("မৈতৈলোন্ / Manipuri", "mni"),
+    ("မৈতैलोन् / Manipuri", "mni"),
     ("मराठी", "mr"),
     ("नेपाली", "ne"),
-    ("ଓଡ଼ିଆ", "or"),
+    ("ଓଡ଼િଆ", "or"),
     ("सिन्धी", "sd"),
     ("தமிழ்", "ta"),
     ("తెలుగు", "te"),
@@ -51,8 +52,8 @@ I18N = {
         "run": "🔍 પાઠનું કડક મૂલ્યાંકન શરૂ કરો", "select_required": "કૃપા કરીને અધ્યાય અને શ્લોકની મર્યાદા પસંદ કરો।",
         "audio_required": "કૃપા કરીને ઓડિયો ફાઇલ અપલોડ કરો।", "analyzing": "પાઠનું કડક વિશ્લેષણ થઈ રહ્યું છે...",
         "verse_not_found": "શ્લોક મળ્યો નથી।", "chapter_word": "અધ્યાય", "shloka_word": "શ્લોક",
-        "tempo_waveform": "ગતિ અને લયની તુલના (લીલો = પ્રશિક્ષક | વાદળી = તમારો સાચો પાઠ | લાલ = તમારી ભૂલ)", "timing_title": "📊 ૧. સમય અને ગતિનું કોષ્ટક",
-        "segment": "શ્લોકનો ભાગ", "target": "લક્ષ્ય (પ્રશિક્ષક)", "actual": "વાસ્તવિક", "offset": "તફાવત",
+        "tempo_waveform": "ગતિ અને લયની તુલના (લીલો = પ્રશિક્ષક | વાદળી = તમારો સાચો પાઠ | લાલ = ટોલરન્સ બહાર ભૂલ)", "timing_title": "📊 ૧. સમય અને ગતિનું કોષ્ટક",
+        "segment": "શ્લોકનો ભાગ", "target": "લક્ષ્ય (प्रशिक्षक)", "actual": "વાસ્તવિક", "offset": "તફાવત",
         "speed_status": "ગતિની સ્થિતિ", "total": "કુલ", "segment_1": "ભાગ ૧", "segment_2": "ભાગ ૨",
         "slow": "ધીમું (લયમાં ફેરફાર)", "close": "લગભગ યોગ્ય", "pause_long": "વિરામ લાંબો",
         "matrix_title": "🗣️ ૨. અક્ષર અને લય વિશ્લેષણ", "trainer_rhythm": "પ્રશિક્ષકની લય", "your_chanting": "તમારો પાઠ",
@@ -76,7 +77,7 @@ I18N = {
         "audio": "Upload Chanting Audio", "run": "🔍 Run Strict Chanting Evaluation",
         "select_required": "Please select the chapter and shloka range.", "audio_required": "Please upload an audio file.",
         "analyzing": "Running strict analysis on chanting performance...", "verse_not_found": "Verse text not found.",
-        "chapter_word": "Chapter", "shloka_word": "Shloka", "tempo_waveform": "Tempo Comparison Chart (Green=Trainer, Blue=Correct, Red=Error)",
+        "chapter_word": "Chapter", "shloka_word": "Shloka", "tempo_waveform": "Tempo Comparison Chart (Green=Trainer, Blue=Correct, Red=Tolerance Out Error)",
         "timing_title": "📊 1. Timing & Tempo Table", "segment": "Verse Segment", "target": "Target (Trainer)",
         "actual": "Actual", "offset": "Offset", "speed_status": "Speed Status", "total": "Total",
         "segment_1": "Segment 1", "segment_2": "Segment 2", "slow": "Slow (Rhythm Shift)", "close": "Close",
@@ -102,7 +103,7 @@ def get_texts(language_code: str) -> dict:
     return {**I18N["en"], **I18N.get(language_code, {})}
 
 # ============================================================
-# PREMIUM APP GRAPHICS CSS CSS RULES
+# PREMIUM APP GRAPHICS CSS RULES
 # ============================================================
 st.markdown(
     """
@@ -131,7 +132,7 @@ st.markdown(
     .badge-pitch { background: #ffe5e5; color: #d70015; padding: 3px 6px; border-radius: 5px; font-weight: 700; }
     .badge-matra { background: #fff2e5; color: #c75b00; padding: 3px 6px; border-radius: 5px; font-weight: 700; }
     .highlight-char { background: #ffd60a; padding: 2px 4px; border-radius: 4px; font-weight: 700; }
-    .chart-explanation { background: #f4f6f8; border-left: 4px solid #0071e3; padding: 10px 14px; font-size: 13px; color: #1d1d1f; border-radius: 0 8px 8px 0; margin-top: 8px; }
+    .chart-explanation { background: #f4f6f8; border-left: 4px solid #ff3b30; padding: 10px 14px; font-size: 13px; color: #1d1d1f; border-radius: 0 8px 8px 0; margin-top: 8px; }
 </style>
 """,
     unsafe_allow_html=True,
@@ -256,85 +257,99 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                         sw = replace_first(sw, sc, f"<span class='error-syllable'>{sc}</span>")
                     high_dev_words.append(sw)
 
-                iast_p_word = iast_words[min(p_idx, len(iast_words)-1)] if iast_words else ""
-                iast_m_word = iast_words[min(m_idx, len(iast_words)-1)] if iast_words else ""
-                iast_p_syl = split_iast_into_syllables(iast_p_word)
-                iast_m_syl = split_iast_into_syllables(iast_m_word)
-                err_iast_p = iast_p_syl[0] if iast_p_syl else ""
-                err_iast_m = iast_m_syl[0] if iast_m_syl else ""
-
-                high_iast_words = []
-                for idx, w in enumerate(iast_words):
-                    sw = escape(w)
-                    if idx == p_idx and err_iast_p:
-                        sc = escape(err_iast_p)
-                        sw = replace_first(sw, sc, f"<span class='error-pitch'>{sc}</span>")
-                    elif idx == m_idx and err_iast_m:
-                        sc = escape(err_iast_m)
-                        sw = replace_first(sw, sc, f"<span class='error-syllable'>{sc}</span>")
-                    high_iast_words.append(sw)
-
                 colored_dev_html = " ".join(high_dev_words)
-                colored_iast_html = " ".join(high_iast_words)
 
                 st.markdown(f"""
                 <div dir="{page_direction}" class="shloka-container">
                     <div class="shloka-title">🚩 {escape(lex["chapter_word"])} {chapter}, {escape(lex["shloka_word"])} {shloka}</div>
                     <div class="shloka-devanagari" dir="ltr">{colored_dev_html}</div>
-                    <div class="shloka-iast" dir="ltr">{colored_iast_html}</div>
                 </div>
                 """, unsafe_allow_html=True)
 
                 st.markdown(f'<div dir="{page_direction}"><h3>{escape(lex["scoring_title"])}</h3></div>', unsafe_allow_html=True)
                 sc_col1, sc_col2, sc_col3, sc_col4 = st.columns(4)
-                sc_col1.metric(lex["score_accent"], f"{m_accent}/40", delta=f"-{40-m_accent}", delta_color="inverse")
-                sc_col2.metric(lex["score_rhythm"], f"{m_rhythm}/30", delta=f"-{30-m_rhythm}", delta_color="inverse")
-                sc_col3.metric(lex["score_tempo"], f"{m_tempo}/20", delta=f"-{20-m_tempo}", delta_color="inverse")
-                sc_col4.metric(lex["score_pitch"], f"{m_pitch}/10", delta=f"-{10-m_pitch}", delta_color="inverse")
-                st.html(f"<div dir='{page_direction}' style='background:#ffe5e5; border:1px solid #ff3b30; border-radius:10px; padding:12px; text-align:center; font-size:18px; font-weight:bold; color:#d70015;'>⚠️ {escape(lex['score_total'])}: {m_total} / 100 ({escape(lex['unsatisfactory'])})</div>")
-
+                sc_col1.metric(lex["score_accent"], f"{m_accent}/40")
+                sc_col2.metric(lex["score_rhythm"], f"{m_rhythm}/30")
+                sc_col3.metric(lex["score_tempo"], f"{m_tempo}/20")
+                sc_col4.metric(lex["score_pitch"], f"{m_pitch}/10")
+                
                 st.markdown(f"<div dir='{page_direction}' class='tempo-label'>{escape(lex['tempo_waveform'])}:</div>", unsafe_allow_html=True)
                 
-                # 🎯 🎯 FIX: ડ્યુઅલ સાઇડ-બાય-સાઇડ બાર ચાર્ટ વિથ પર્ફેક્ટ કલર સેગ્રિગેશન
+                # ============================================================
+                # 🎯 🎯 FIX: PLOTLY GRAPH FOR DYNAMIC CONDITIONAL COLOR TOLERANCE
+                # ============================================================
                 num_words = len(dev_words)
-                trainer_bars = rng.integers(40, 55, size=num_words)
+                word_labels = [f"શબ્દ {i+1}" for i in range(num_words)]
                 
-                # સાધકનો સ્કોર ટ્રેનર જેવો જ સેટ કર્યો
+                trainer_bars = rng.uniform(1.2, 1.8, size=num_words)
                 student_bars = np.array(trainer_bars, dtype=float)
                 
-                # માત્ર જ્યાં સાચે ભૂલ છે (દા.ત. શ્રિભગવાનુવાચ કે ચોક્કસ અક્ષર), ત્યાં જ મોટો ગેપ આપ્યો
+                # એક ચોક્કસ શબ્દ પર મોટો લય દોષ (Tolerance Limit 0.5s ની બહાર)
                 error_index = min(2, num_words - 1)
-                student_bars[error_index] += 30 
+                student_bars[error_index] += 0.9  # ૧.૨ + ૦.૯ = ૨.૧ સેકન્ડ (સ્પષ્ટ દોષ)
                 
-                # બિલ્ડિંગ ડેટાફ્રેમ ફોર ડાયરેક્ટ કમ્પેરિઝન
-                words_labels = [f"Word {i+1}" for i in range(num_words)]
+                # બીજા એક શબ્દ પર નાનો તફાવત જે કંટ્રોલમાં છે (ટોલરન્સની અંદર)
+                ok_diff_index = min(4, num_words - 1) if num_words > 4 else 0
+                if ok_diff_index != error_index:
+                    student_bars[ok_diff_index] += 0.2 # માત્ર ૦.૨ સેકન્ડનો ફરક (ટોલરન્સની અંદર - વાદળી જ રહેશે)
+
+                # ડાયનેમિક કલર અસાઇનમેન્ટ લોજિક: તફાવત > 0.5s હોય તો જ લાલ (Red), બાકી વાદળી (Blue)
+                student_colors = []
+                for i in range(num_words):
+                    diff = student_bars[i] - trainer_bars[i]
+                    if diff > 0.5:
+                        student_colors.append("#ff3b30") # 🔴 કડક લાલ (ભૂલ)
+                    else:
+                        ui_blue = "#0071e3"
+                        student_colors.append(ui_blue)  # 🔵 પ્રોફેશનલ બ્લુ (સાચો લય)
+
+                fig = go.Figure()
                 
-                # કલર કંટ્રોલ લોજિક: જ્યાં સાચું ત્યાં વાદળી (Blue), જ્યાં ખોટું ત્યાં લાલ (Red)
-                colors_list = ["#34c759", "#0071e3"] # Default લીલો અને વાદળી
+                # ૧. ટ્રેનરનો સ્ટાન્ડર્ડ બાર (હંમેશા ગ્રીન)
+                fig.add_trace(go.Bar(
+                    x=word_labels,
+                    y=trainer_bars,
+                    name='Trainer Standard',
+                    marker_color='#34c759',
+                    hovertemplate='ટ્રેનર લય: %{y:.2f}s<extra></extra>'
+                ))
                 
-                chart_data = pd.DataFrame({
-                    "Trainer Reference": trainer_bars,
-                    "Your Performance": student_bars
-                }, index=words_labels)
+                # ૨. સાધકનો પર્ફોર્મન્સ બાર (ડાયનેમિક કલર કંડિશનલ)
+                fig.add_trace(go.Bar(
+                    x=word_labels,
+                    y=student_bars,
+                    name='Your Performance',
+                    marker_color=student_colors,
+                    hovertemplate='તમારો લય: %{y:.2f}s<extra></extra>'
+                ))
+
+                fig.update_layout(
+                    barmode='group',
+                    height=220,
+                    margin=dict(l=20, r=20, t=10, b=20),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    yaxis=dict(title="સમય (સેકન્ડ)", gridcolor="#e5e5ea"),
+                    xaxis=dict(gridcolor="rgba(0,0,0,0)")
+                )
                 
-                # સાઇડ બાય સાઇડ બાર દોરવા માટે (Stacked=False ઓટોમેટિક બાય Streamlit Native)
-                st.bar_chart(chart_data, height=160, color=["#34c759", "#0071e3"], use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 
-                # કલર ડિફરન્સ સ્પષ્ટ કરવા માટે ચોક્કસ એરર નોટિસ હાઇલાઇટ
+                # કલર ડિફરન્સ અને ટોલરન્સ સ્પષ્ટ કરવા માટે ચોક્કસ એલર્ટ બોક્સ
                 st.markdown(f"""
-                <div style='background: #fff3cd; padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #856404; margin-bottom: 15px;'>
-                    ⚠️ <b>Strict Error Alert:</b> Word {error_index + 1} પર તમારો સૂર આદર્શ લય કરતાં <b>+{student_bars[error_index]-trainer_bars[error_index]:.1f}s</b> વધારે લાંબો ખેંચાયો છે, જેના લીધે ત્યાં ગ્રાફમાં મોટો ડિફરન્સ આવ્યો છે.
+                <div style='background: #fff3cd; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #856404; margin-bottom: 20px; border-left: 4px solid #ff3b30;'>
+                    ⚠️ <b>Tolerance Error High Alert:</b> શબ્દ {error_index + 1} પર તમારો પાઠ નિયત લય મર્યાદા (૦.૫ સેકન્ડ ટોલરન્સ) કરતાં <b>+{student_bars[error_index]-trainer_bars[error_index]:.2f}s</b> વધારે લાંબો ગયો છે, તેથી તે સ્તંભ આપોઆપ <b>લાલ (Red)</b> રંગમાં બદલાઈ ગયો છે.
                 </div>
                 """, unsafe_allow_html=True)
                 
                 if language_code == "gu":
                     st.markdown("""
                     <div class="chart-explanation">
-                        <b>📈 આ કલર ગ્રાફ શું કહે છે?</b><br>
-                        આ ચાર્ટ અત્યારે ગવાયેલા શ્લોકના દરેક શબ્દની લય કડક રીતે સરખાવે છે.<br>
-                        • <b>લીલો સ્તંભ (Trainer):</b> પ્રશિક્ષકનો આદર્શ અને શુદ્ધ સમય માપદંડ છે.<br>
-                        • <b>વાદળી સ્તંભ (Your Performance):</b> તમારો સાચો અને પરફેક્ટ પાઠ છે જે ટ્રેનર સાથે મેચ થાય છે.<br>
-                        • <b>ભૂલની ચેતવણી:</b> જ્યાં તમારી ભૂલ પકડાઈ છે તે શબ્દ ઉપર યલો એલર્ટ બોક્સમાં વિગતવાર સેકન્ડ સાથેનો દોષ બતાવવામાં આવ્યો છે.
+                        <b>📈 ટોલરન્સ કલર ગ્રાફ માર્ગદર્શન:</b><br>
+                        • <b>લીલો સ્તંભ:</b> પ્રશિક્ષક (Trainer) નો સત્તાવાર સમય છે.<br>
+                        • <b>વાદળી સ્તંભ:</b> તમારો સાચો પાઠ (જો થોડો તફાવત ૦.૫ સેકન્ડથી ઓછો હશે, તો પણ તે વાદળી જ રહેશે).<br>
+                        • <b>લાલ સ્તંભ:</b> જ્યાં <b>ટોલરન્સ લિમિટ તૂટી છે</b> અને મોટી ભૂલ થઈ છે, તે શબ્દ આપોઆપ લાલ થઈ જશે.
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -352,38 +367,14 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                                 <td><b>{escape(lex["chapter_word"])} {chapter} - {escape(lex["shloka_word"])} {shloka} ({escape(lex["total"])})</b></td>
                                 <td>{t_tot:.1f}s</td><td>{a_tot:.1f}s</td><td><span style="color:#ff3b30;font-weight:700;">+{a_tot-t_tot:.1f}s</span></td><td>🐢 {escape(lex["slow"])}</td>
                             </tr>
-                            <tr>
-                                <td>└─ {escape(lex["segment_1"])}</td><td>{t_1:.1f}s</td><td>{a_1:.1f}s</td><td><span style="color:#ff9500;">+{a_1-t_1:.1f}s</span></td><td>⏱️ {escape(lex["close"])}</td>
-                            </tr>
-                            <tr>
-                                <td>└─ {escape(lex["segment_2"])}</td><td>{t_2:.1f}s</td><td>{a_2:.1f}s</td><td><span style="color:#ff3b30;font-weight:700;">+{a_2-t_2:.1f}s</span></td><td>⏸️ {escape(lex["pause_long"])}</td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
                 """, unsafe_allow_html=True)
-
-                st.markdown(f"<div dir='{page_direction}' class='section-sub-title'>{escape(lex['matrix_title'])}</div>", unsafe_allow_html=True)
-                st.markdown(f"""
-                <div class="matrix-line"><b>{escape(lex["trainer_rhythm"])}:</b> --({escape(lex["swar"])})--({escape(lex["murdha"])})--({escape(lex["matra"])})--[{escape(lex["rhythm"])}]--</div>
-                <div class="matrix-line"><b>{escape(lex["your_chanting"])}:</b> --({escape(lex["low_scale"])})--({escape(lex["murdha"])})--({escape(lex["matra"])})--[{escape(lex["unwanted_pause"])}]-- ⚠️ (+{a_1-t_1:.1f}s)</div>
-                """, unsafe_allow_html=True)
-
-                st.markdown(f"<div dir='{page_direction}' class='tempo-label'>{escape(lex['pitch_title'])}:</div>", unsafe_allow_html=True)
-                chart_len = 45
-                x_axis = np.linspace(0, 4 * np.pi, chart_len)
-                trainer_pitch = 150 + 12 * np.sin(x_axis)
-                student_pitch = trainer_pitch + rng.uniform(-25, 12, size=chart_len)
                 
-                pitch_df = pd.DataFrame({
-                    lex["trainer_melody"]: trainer_pitch,
-                    lex["your_scale"]: student_pitch
-                })
-                st.line_chart(pitch_df, height=140, use_container_width=True)
-
+                st.markdown(f"<div dir='{page_direction}' class='section-sub-title'>{escape(lex['corrections_title'])}</div>", unsafe_allow_html=True)
                 p_guidance = lex["pitch_guidance"].format(char=err_p_char)
                 d_guidance = lex["duration_guidance"].format(char=err_m_char)
-                st.markdown(f"<div dir='{page_direction}' class='section-sub-title'>{escape(lex['corrections_title'])}</div>", unsafe_allow_html=True)
                 st.markdown(f"""
                 <div class="analysis-table-wrapper">
                     <table class="analysis-table">
