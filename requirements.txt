@@ -3,3 +3,4 @@ librosa
 numpy
 pydub
 pandas
+plotly
