@@ -29,8 +29,8 @@ st.markdown("""
     .shloka-title { font-size: 14px; color: #0071e3; font-weight: bold; margin-bottom: 8px; }
     .shloka-devanagari { font-size: 22px; line-height: 2; text-align: center; color: #1d1d1f; margin-bottom: 14px; }
     .shloka-iast { font-size: 17px; line-height: 1.6; text-align: center; color: #434345; font-style: italic; border-top: 1px dashed #e5e5ea; padding-top: 12px; }
-    .error-pitch { color: #ff3b30 !important; font-weight: bold; text-decoration: underline; }
-    .error-syllable { color: #ff9500 !important; font-weight: bold; border-bottom: 2px dashed #ff9500; }
+    .error-pitch { color: #ff3b30 !important; font-weight: bold; text-decoration: underline !important; }
+    .error-syllable { color: #ff9500 !important; font-weight: bold; border-bottom: 2px dashed #ff9500 !important; }
     
     .analysis-table-wrapper { width: 100%; overflow-x: auto; margin-top: 15px; }
     .analysis-table { width: 100%; border-collapse: collapse; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5ea; min-width: 500px; }
@@ -50,7 +50,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Clean Text Lexicon (Pure English Interface)
+# Interface Labels Configuration
 lex = {
     "title": "🕉️ Learn Geeta - Shloka Accent & Rhythm Validator",
     "subtitle": "Dynamic Dual-Script Realtime Audio Alignment Engine.",
@@ -102,7 +102,7 @@ def split_iast_into_syllables(word):
     pattern = r'([b-df-hj-np-rt-vx-z]h?[āīūṛéèोौṃḥ]?|[aeiouāīūṛ])'
     return re.findall(pattern, word, re.IGNORECASE)
 
-# Main UI Heading
+# Main Header UI Rendering
 st.markdown(f"""
 <div class='heading-text'>
     <h1 style='font-size: 26px; font-weight: 700; color: #1d1d1f;'>{lex['title']}</h1>
@@ -110,7 +110,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Layout Columns
+# Layout Inputs
 col1, col2, col3 = st.columns(3)
 with col1:
     chapter_sel = st.selectbox(lex['lbl_ch'], [f"Ch{i}" for i in range(1, 19)], index=None, placeholder="- None -")
@@ -131,7 +131,7 @@ if st.button(lex['btn_run'], type="primary"):
             ch_clean = clean_key(chapter_sel.replace("Ch", ""))
             ch_formatted = f"CH{int(ch_clean):02d}"
             
-            # Secure Remote Connection to Hugging Face Master Dataset
+            # Secure Remote Stream from Hugging Face Dataset
             hf_audio_url = f"https://huggingface.co/datasets/jatindved/geeta-master-audios/resolve/main/master_audios/{ch_formatted}.mp3"
             
             try:
@@ -143,9 +143,12 @@ if st.button(lex['btn_run'], type="primary"):
             s_start, s_end = int(start_shloka), int(end_shloka)
             if s_start > s_end: s_start, s_end = s_end, s_start
             
+            # Master HTML report accumulator variable
+            final_report_html = ""
+            
             for s_idx in range(s_start, s_end + 1):
                 db_key = f"{ch_clean}_{clean_key(s_idx)}"
-                raw_dev = hin_db.get(db_key, f"Verse {s_idx} text not found.")
+                raw_dev = hin_db.get(db_key, f"Verse text not found.")
                 raw_eng = eng_db.get(db_key, "Verse text not found.")
                 
                 dev_words = raw_dev.split()
@@ -180,7 +183,8 @@ if st.button(lex['btn_run'], type="primary"):
                 act_p = lex["err_p_msg"].format(char=err_pitch_char)
                 act_m = lex["err_m_msg"].format(char=err_matra_char)
                 
-                st.markdown(f"""
+                # Appending to the master string
+                final_report_html += f"""
                 <div class='shloka-container'>
                     <div class='shloka-title'>🚩 Adhyay {ch_clean}, Shloka {s_idx}</div>
                     <div class='shloka-devanagari'>{colored_dev}</div>
@@ -221,4 +225,7 @@ if st.button(lex['btn_run'], type="primary"):
                         </table>
                     </div>
                 </div>
-                """, unsafe_allow_html=True)
+                """
+            
+            # 🎯 FIX: Streamlit માં પ્રોਪર HTML રેન્ડર કરવા માટે આ કમાન્ડ અત્યંત જરૂરી છે
+            st.markdown(final_report_html, unsafe_allow_html=True)
