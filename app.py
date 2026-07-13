@@ -142,7 +142,7 @@ if st.button(lex['btn_run'], type="primary"):
             s_start, s_end = int(start_shloka), int(end_shloka)
             if s_start > s_end: s_start, s_end = s_end, s_start
             
-            # Master HTML container initialization
+            # Master HTML report container
             final_report_html = ""
             
             for s_idx in range(s_start, s_end + 1):
@@ -182,7 +182,7 @@ if st.button(lex['btn_run'], type="primary"):
                 act_p = lex["err_p_msg"].format(char=err_pitch_char)
                 act_m = lex["err_m_msg"].format(char=err_matra_char)
                 
-                # Appending cleanly to the string object WITHOUT any inline printing commands inside the loop
+                # Append formatted HTML safely
                 final_report_html += f"""
                 <div class='shloka-container'>
                     <div class='shloka-title'>🚩 Adhyay {ch_clean}, Shloka {s_idx}</div>
@@ -226,5 +226,5 @@ if st.button(lex['btn_run'], type="primary"):
                 </div>
                 """
             
-            # 🎯 SINGLE AUTHORITATIVE OUTPUT: આખા પેજ પર માત્ર એક જ વાર શુદ્ધ બ્રાઉઝર ફોર્મેટમાં રિપોર્ટ રેન્ડર થશે
-            st.markdown(final_report_html, unsafe_allow_html=True)
+            # 🎯 🎯 FINAL FIX: Rendering HTML content seamlessly via native st.html element
+            st.html(final_report_html)
