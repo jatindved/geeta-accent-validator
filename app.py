@@ -29,7 +29,7 @@ LANGUAGE_OPTIONS = [
     ("বাংলা", "bn"),
     ("ಕನ್ನಡ", "kn"),
     ("മലയാളം", "ml"),
-    ("မৈতৈলোন্ / Manipuri", "mni"),
+    ("မৈতैलोन् / Manipuri", "mni"),
     ("मराठी", "mr"),
     ("नेपाली", "ne"),
     ("ଓଡ଼ିଆ", "or"),
@@ -41,7 +41,7 @@ LANGUAGE_OPTIONS = [
 LANGUAGE_NAME_TO_CODE = dict(LANGUAGE_OPTIONS)
 
 # ============================================================
-# INTERFACE TRANSLATIONS
+# COMPLETE INTERFACE TRANSLATIONS
 # ============================================================
 I18N = {
     "gu": {
@@ -56,7 +56,7 @@ I18N = {
         "speed_status": "ગતિની સ્થિતિ", "total": "કુલ", "segment_1": "ભાગ ૧", "segment_2": "ભાગ ૨",
         "slow": "ધીમું (લયમાં ફેરફાર)", "close": "લગભગ યોગ્ય", "pause_long": "વિરામ લાંબો",
         "matrix_title": "🗣️ ૨. અક્ષર અને લય વિશ્લેષણ", "trainer_rhythm": "પ્રશિક્ષકની લય", "your_chanting": "તમારો પાઠ",
-        "swar": "સ્વર", "murdha": "மૂર્ધા", "matra": "માત્રા", "rhythm": "લય", "low_scale": "નીચો સ્વર", "unwanted_pause": "અનાવશ્યક વિરામ",
+        "swar": "સ્વર", "murdha": "મૂર્ધા", "matra": "માત્રા", "rhythm": "લય", "low_scale": "નીચો સ્વર", "unwanted_pause": "અનાવશ્યક વિરામ",
         "pitch_title": "🎵 ૩. સ્વર / પિચ ટ્યુનિંગ ગ્રાફ (કડક સરખામણી)", "trainer_melody": "પ્રશિક્ષકનો લક્ષ્ય સ્વર", "your_scale": "તમારો સ્વર",
         "corrections_title": "📝 ૪. અક્ષરવાર સુધારા અને માર્ગદર્શન", "target_syllable": "લક્ષિત અક્ષર", "error_type": "ભૂલનો પ્રકાર", "guidance": "સુધારાનું માર્ગદર્શન",
         "pitch_mismatch": "સ્વરમાં તફાવત (સ્વર ભૂલ)", "duration_error": "માત્રાની ભૂલ (દીર્ઘ/હ્રસ્વ દોષ)",
@@ -66,7 +66,7 @@ I18N = {
         "demo_notice": "મહત્ત્વપૂર્ણ: વાસ્તવિક ઓડિયો વિશ્લેષણ જોડાય ત્યાં સુધી આ આંકડા પ્રદર્શન અને કડક ટેસ્ટિંગ મોડ માટે છે।",
         "scoring_title": "🎯 શ્લોક શુદ્ધતા સ્કોરકાર્ડ (Strict Evaluation Mode)",
         "score_accent": "ઉચ્ચાર શુદ્ધિ (Accent)", "score_rhythm": "લય અને માત્રા (Rhythm)",
-        "score_tempo": "ગતિ સુસંગતતા (Tempo)", "score_pitch": "સ્વર મેળ (Pitch)", "score_total": "કુલ ગુણ",
+        "score_tempo": "ગતિ Summary (Tempo)", "score_pitch": "સ્વર મેળ (Pitch)", "score_total": "કુલ ગુણ",
         "unsatisfactory": "અસંતોષકારક પ્રદર્શન - સુધારણા જરૂરી છે"
     },
     "en": {
@@ -102,7 +102,7 @@ def get_texts(language_code: str) -> dict:
     return {**I18N["en"], **I18N.get(language_code, {})}
 
 # ============================================================
-# CUSTOM LAYOUT DESIGN AND FONTS
+# PREMIUM CSS STYLING
 # ============================================================
 st.markdown(
     """
@@ -178,7 +178,7 @@ def replace_first(text: str, old: str, new: str) -> str:
     return text.replace(old, new, 1)
 
 # ============================================================
-# MAIN APPLICATION INTERFACE
+# MAIN INTERFACE IMPLEMENTATION
 # ============================================================
 selected_language_name = st.selectbox("🌐 Interface Language", options=[name for name, _ in LANGUAGE_OPTIONS], index=0)
 language_code = LANGUAGE_NAME_TO_CODE[selected_language_name]
@@ -285,7 +285,6 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 🎯 MARKS SYSTEM
                 st.markdown(f'<div dir="{page_direction}"><h3>{escape(lex["scoring_title"])}</h3></div>', unsafe_allow_html=True)
                 sc_col1, sc_col2, sc_col3, sc_col4 = st.columns(4)
                 sc_col1.metric(lex["score_accent"], f"{m_accent}/40", delta=f"-{40-m_accent}", delta_color="inverse")
@@ -294,14 +293,11 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                 sc_col4.metric(lex["score_pitch"], f"{m_pitch}/10", delta=f"-{10-m_pitch}", delta_color="inverse")
                 st.html(f"<div dir='{page_direction}' style='background:#ffe5e5; border:1px solid #ff3b30; border-radius:10px; padding:12px; text-align:center; font-size:18px; font-weight:bold; color:#d70015;'>⚠️ {escape(lex['score_total'])}: {m_total} / 100 ({escape(lex['unsatisfactory'])})</div>")
 
-                # 🎯 FIX ૨: ડ્યુઅલ કલર ગ્રાફિક્સ (ટ્રેનર વિ સાધક લયની કમ્પેરિઝન)
                 st.markdown(f"<div dir='{page_direction}' class='tempo-label'>{escape(lex['tempo_waveform'])}:</div>", unsafe_allow_html=True)
                 
-                # માત્ર જે તે શ્લોકના શબ્દોની સંખ્યા મુજબ બાર જનરેટ થશે
                 num_words = len(dev_words)
                 trainer_rhythm_bars = rng.integers(35, 55, size=num_words)
                 student_rhythm_bars = trainer_rhythm_bars + rng.uniform(-15, 25, size=num_words)
-                # મુખત્વે જ્યાં લય તૂટ્યો છે ત્યાં મોટો ડિફરન્સ બતાવવા માટે
                 student_rhythm_bars[min(2, num_words-1)] += 35 
 
                 chart_data = pd.DataFrame({
@@ -309,7 +305,6 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                     "Your Performance (લાલ)": student_rhythm_bars
                 })
                 
-                # Streamlit બાર ચાર્ટ - ડ્યુઅલ કલર સેટિંગ્સ
                 st.bar_chart(chart_data, height=140, color=["#34c759", "#ff3b30"], use_container_width=True)
                 
                 if language_code == "gu":
@@ -347,14 +342,13 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 🗣️ ૨. અક્ષર અને લય વિશ્લેષણ - FIX ૧ (વેરિયેબલ એરર સોલ્વડ)
                 st.markdown(f"<div dir='{page_direction}' class='section-sub-title'>{escape(lex['matrix_title'])}</div>", unsafe_allow_html=True)
                 st.markdown(f"""
                 <div class="matrix-line"><b>{escape(lex["trainer_rhythm"])}:</b> --({escape(lex["swar"])})--({escape(lex["murdha"])})--({escape(lex["matra"])})--[{escape(lex["rhythm"])}]--</div>
                 <div class="matrix-line"><b>{escape(lex["your_chanting"])}:</b> --({escape(lex["low_scale"])})--({escape(lex["murdha"])})--({escape(lex["matra"])})--[{escape(lex["unwanted_pause"])}]-- ⚠️ (+{a_1-t_1:.1f}s)</div>
                 """, unsafe_allow_html=True)
 
-                st.markdown(f"<div dir='{page_direction}' class='section-sub-title'>{escape(lex['pitch_title'])}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div dir='{page_direction}' class='pitch-label'>{escape(lex['pitch_title'])}:</div>", unsafe_allow_html=True)
                 chart_len = 45
                 x_axis = np.linspace(0, 4 * np.pi, chart_len)
                 trainer_pitch = 150 + 12 * np.sin(x_axis)
@@ -373,7 +367,7 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                 <div class="analysis-table-wrapper">
                     <table class="analysis-table">
                         <thead>
-                            <tr><th>{escape(lex["target_syllable"])}</th><th>{escape(lex["error_type"])}</th><th>{escape(lex["guidance"]}</th></tr>
+                            <tr><th>{escape(lex["target_syllable"])}</th><th>{escape(lex["error_type"])}</th><th>{escape(lex["guidance"])}</th></tr>
                         </thead>
                         <tbody>
                             <tr>
