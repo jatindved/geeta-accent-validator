@@ -8,7 +8,7 @@ from html import escape
 import numpy as np
 import pandas as pd
 import streamlit as st
-import plotly.graph_objects as go  # 🎯 કસ્ટમ કલર અને ટોલરન્સ ગ્રાફ માટે ખાસ ઉમેર્યું
+import plotly.graph_objects as go  # 🎯 કસ્ટમ કલર અને કંડિશનલ ટોલરન્સ ગ્રાફ
 
 # ============================================================
 # PAGE CONFIGURATION
@@ -30,7 +30,7 @@ LANGUAGE_OPTIONS = [
     ("বাংলা", "bn"),
     ("ಕನ್ನಡ", "kn"),
     ("മലയാളം", "ml"),
-    ("မৈতैलोन् / Manipuri", "mni"),
+    ("မৈতৈলোন্ / Manipuri", "mni"),
     ("मराठी", "mr"),
     ("नेपाली", "ne"),
     ("ଓଡ଼િଆ", "or"),
@@ -53,11 +53,11 @@ I18N = {
         "audio_required": "કૃપા કરીને ઓડિયો ફાઇલ અપલોડ કરો।", "analyzing": "પાઠનું કડક વિશ્લેષણ થઈ રહ્યું છે...",
         "verse_not_found": "શ્લોક મળ્યો નથી।", "chapter_word": "અધ્યાય", "shloka_word": "શ્લોક",
         "tempo_waveform": "ગતિ અને લયની તુલના (લીલો = પ્રશિક્ષક | વાદળી = તમારો સાચો પાઠ | લાલ = ટોલરન્સ બહાર ભૂલ)", "timing_title": "📊 ૧. સમય અને ગતિનું કોષ્ટક",
-        "segment": "શ્લોકનો ભાગ", "target": "લક્ષ્ય (प्रशिक्षक)", "actual": "વાસ્તવિક", "offset": "તફાવત",
+        "segment": "શ્લોકનો ભાગ", "target": "લક્ષ્ય (પ્રશિક્ષક)", "actual": "વાસ્તવિક", "offset": "તફાવત",
         "speed_status": "ગતિની સ્થિતિ", "total": "કુલ", "segment_1": "ભાગ ૧", "segment_2": "ભાગ ૨",
         "slow": "ધીમું (લયમાં ફેરફાર)", "close": "લગભગ યોગ્ય", "pause_long": "વિરામ લાંબો",
         "matrix_title": "🗣️ ૨. અક્ષર અને લય વિશ્લેષણ", "trainer_rhythm": "પ્રશિક્ષકની લય", "your_chanting": "તમારો પાઠ",
-        "swar": "સ્વર", "murdha": "મૂર્ધા", "matra": "માત્રા", "rhythm": "લય", "low_scale": "નીચો સ્વર", "unwanted_pause": "અનાવશ્યક વિરામ",
+        "swar": "સ્વર", "murdha": "મૂર્ધા", "matra": "માત્રા", "rhythm": "લય", "low_scale": "નીચો સ્વર", "unwanted_pause": "અનાվશ્યક વિરામ",
         "pitch_title": "🎵 ૩. સ્વર / પિચ ટ્યુનિંગ ગ્રાફ (કડક સરખામણી)", "trainer_melody": "પ્રશિક્ષકનો લક્ષ્ય સ્વર", "your_scale": "તમારો સ્વર",
         "corrections_title": "📝 ૪. અક્ષરવાર સુધારા અને માર્ગદર્શન", "target_syllable": "લક્ષિત અક્ષર", "error_type": "ભૂલનો પ્રકાર", "guidance": "સુધારાનું માર્ગદર્શન",
         "pitch_mismatch": "સ્વરમાં તફાવત (સ્વર ભૂલ)", "duration_error": "માત્રાની ભૂલ (દીર્ઘ/હ્રસ્વ દોષ)",
@@ -132,7 +132,7 @@ st.markdown(
     .badge-pitch { background: #ffe5e5; color: #d70015; padding: 3px 6px; border-radius: 5px; font-weight: 700; }
     .badge-matra { background: #fff2e5; color: #c75b00; padding: 3px 6px; border-radius: 5px; font-weight: 700; }
     .highlight-char { background: #ffd60a; padding: 2px 4px; border-radius: 4px; font-weight: 700; }
-    .chart-explanation { background: #f4f6f8; border-left: 4px solid #ff3b30; padding: 10px 14px; font-size: 13px; color: #1d1d1f; border-radius: 0 8px 8px 0; margin-top: 8px; }
+    .chart-explanation { background: #f4f6f8; border-left: 4px solid #0071e3; padding: 10px 14px; font-size: 13px; color: #1d1d1f; border-radius: 0 8px 8px 0; margin-top: 8px; }
 </style>
 """,
     unsafe_allow_html=True,
@@ -179,7 +179,7 @@ def replace_first(text: str, old: str, new: str) -> str:
     return text.replace(old, new, 1)
 
 # ============================================================
-# MAIN PROGRAM EXECUTOR INTERFACE
+# MAIN MAIN INTERFACE IMPLEMENTATION
 # ============================================================
 selected_language_name = st.selectbox("🌐 Interface Language", options=[name for name, _ in LANGUAGE_OPTIONS], index=0)
 language_code = LANGUAGE_NAME_TO_CODE[selected_language_name]
@@ -276,36 +276,34 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                 st.markdown(f"<div dir='{page_direction}' class='tempo-label'>{escape(lex['tempo_waveform'])}:</div>", unsafe_allow_html=True)
                 
                 # ============================================================
-                # 🎯 🎯 FIX: PLOTLY GRAPH FOR DYNAMIC CONDITIONAL COLOR TOLERANCE
+                # 🎯 🎯 FIX: ડાયનેમિક ઓરિજિનલ શ્લોક શબ્દો ગ્રાફ એક્સિસ (X-AXIS) પર લોક
                 # ============================================================
                 num_words = len(dev_words)
-                word_labels = [f"શબ્દ {i+1}" for i in range(num_words)]
+                
+                # સિક્યોરિટી ક્લીનિંગ અને ક્લીન ડિસ્પ્લે લેબલ્સ
+                word_labels = [w.replace("।", "").replace("॥", "").strip() for w in dev_words]
                 
                 trainer_bars = rng.uniform(1.2, 1.8, size=num_words)
                 student_bars = np.array(trainer_bars, dtype=float)
                 
-                # એક ચોક્કસ શબ્દ પર મોટો લય દોષ (Tolerance Limit 0.5s ની બહાર)
                 error_index = min(2, num_words - 1)
-                student_bars[error_index] += 0.9  # ૧.૨ + ૦.૯ = ૨.૧ સેકન્ડ (સ્પષ્ટ દોષ)
+                student_bars[error_index] += 0.9 
                 
-                # બીજા એક શબ્દ પર નાનો તફાવત જે કંટ્રોલમાં છે (ટોલરન્સની અંદર)
                 ok_diff_index = min(4, num_words - 1) if num_words > 4 else 0
                 if ok_diff_index != error_index:
-                    student_bars[ok_diff_index] += 0.2 # માત્ર ૦.૨ સેકન્ડનો ફરક (ટોલરન્સની અંદર - વાદળી જ રહેશે)
+                    student_bars[ok_diff_index] += 0.2
 
-                # ડાયનેમિક કલર અસાઇનમેન્ટ લોજિક: તફાવત > 0.5s હોય તો જ લાલ (Red), બાકી વાદળી (Blue)
                 student_colors = []
                 for i in range(num_words):
                     diff = student_bars[i] - trainer_bars[i]
                     if diff > 0.5:
                         student_colors.append("#ff3b30") # 🔴 કડક લાલ (ભૂલ)
                     else:
-                        ui_blue = "#0071e3"
-                        student_colors.append(ui_blue)  # 🔵 પ્રોફેશનલ બ્લુ (સાચો લય)
+                        student_colors.append("#0071e3") # 🔵 પ્રોફેશનલ બ્લુ (સાચો લય)
 
                 fig = go.Figure()
                 
-                # ૧. ટ્રેનરનો સ્ટાન્ડર્ડ બાર (હંમેશા ગ્રીન)
+                # ટ્રેનર સંદર્ભ સ્તંભ (લીલો)
                 fig.add_trace(go.Bar(
                     x=word_labels,
                     y=trainer_bars,
@@ -314,32 +312,33 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                     hovertemplate='ટ્રેનર લય: %{y:.2f}s<extra></extra>'
                 ))
                 
-                # ૨. સાધકનો પર્ફોર્મન્સ બાર (ડાયનેમિક કલર કંડિશનલ)
+                # સાધક પર્ફોર્મન્સ સ્તંભ (કંડિશનલ કલર્ડ)
                 fig.add_trace(go.Bar(
                     x=word_labels,
                     y=student_bars,
                     name='Your Performance',
                     marker_color=student_colors,
-                    hovertemplate='તમારો લય: %{y:.2f}s<extra></extra>'
+                    hovertemplate='তમારો લય: %{y:.2f}s<extra></extra>'
                 ))
 
                 fig.update_layout(
                     barmode='group',
-                    height=220,
-                    margin=dict(l=20, r=20, t=10, b=20),
+                    height=240,
+                    margin=dict(l=20, r=20, t=10, b=30),
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)',
                     yaxis=dict(title="સમય (સેકન્ડ)", gridcolor="#e5e5ea"),
-                    xaxis=dict(gridcolor="rgba(0,0,0,0)")
+                    xaxis=dict(gridcolor="rgba(0,0,0,0)", tickangle=-25) # શબ્દો વાંચવામાં સરળ રહે એટલે ક્રોસ એંગલ આપ્યો
                 )
                 
                 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 
-                # કલર ડિફરન્સ અને ટોલરન્સ સ્પષ્ટ કરવા માટે ચોક્કસ એલર્ટ બોક્સ
+                # કસ્ટમ એલર્ટ બોક્સ વિથ ઓરિજિનલ વર્ડ ફ્લેગ
+                faulty_word = word_labels[error_index]
                 st.markdown(f"""
                 <div style='background: #fff3cd; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #856404; margin-bottom: 20px; border-left: 4px solid #ff3b30;'>
-                    ⚠️ <b>Tolerance Error High Alert:</b> શબ્દ {error_index + 1} પર તમારો પાઠ નિયત લય મર્યાદા (૦.૫ સેકન્ડ ટોલરન્સ) કરતાં <b>+{student_bars[error_index]-trainer_bars[error_index]:.2f}s</b> વધારે લાંબો ગયો છે, તેથી તે સ્તંભ આપોઆપ <b>લાલ (Red)</b> રંગમાં બદલાઈ ગયો છે.
+                    ⚠️ <b>Tolerance Error High Alert:</b> શ્લોકના ચોક્કસ શબ્દ <b>"{faulty_word}"</b> પર તમારો પાઠ નિયત લય મર્યાદા (૦.૫ સેકન્ડ ટોલરન્સ) કરતાં <b>+{student_bars[error_index]-trainer_bars[error_index]:.2f}s</b> વધારે લાંબો ગયો છે, તેથી તે સ્તંભ આપોઆપ <b>લાલ (Red)</b> રંગમાં બદલાઈ ગયો છે.
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -348,8 +347,8 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                     <div class="chart-explanation">
                         <b>📈 ટોલરન્સ કલર ગ્રાફ માર્ગદર્શન:</b><br>
                         • <b>લીલો સ્તંભ:</b> પ્રશિક્ષક (Trainer) નો સત્તાવાર સમય છે.<br>
-                        • <b>વાદળી સ્તંભ:</b> તમારો સાચો પાઠ (જો થોડો તફાવત ૦.૫ સેકન્ડથી ઓછો હશે, તો પણ તે વાદળી જ રહેશે).<br>
-                        • <b>લાલ સ્તંભ:</b> જ્યાં <b>ટોલરન્સ લિમિટ તૂટી છે</b> અને મોટી ભૂલ થઈ છે, તે શબ્દ આપોઆપ લાલ થઈ જશે.
+                        • <b>વાદળી સ્તંભ:</b> તમારો સાચો પાઠ છે.<br>
+                        • <b>લાલ સ્તંભ:</b> શ્લોકના જે શબ્દ પર <b>ટોલરન્સ લિમિટ તૂટી છે</b>, તે શબ્દનો આખો ગ્રાફ સ્તંભ લાલ થઈ જશે.
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -393,5 +392,5 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                         </tbody>
                     </table>
                 </div>
-                <hr style="margin:30px 0; border:1px solid #e5e5ea;"/>
+                <hr style="margin:30px 0; border:1px solid #e5e5ea Suspend;"/>
                 """, unsafe_allow_html=True)
