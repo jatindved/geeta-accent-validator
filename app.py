@@ -50,7 +50,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Interface Labels Configuration
+# Clean English Interface Text Configuration
 lex = {
     "title": "🕉️ Learn Geeta - Shloka Accent & Rhythm Validator",
     "subtitle": "Dynamic Dual-Script Realtime Audio Alignment Engine.",
@@ -102,7 +102,7 @@ def split_iast_into_syllables(word):
     pattern = r'([b-df-hj-np-rt-vx-z]h?[āīūṛéèोौṃḥ]?|[aeiouāīūṛ])'
     return re.findall(pattern, word, re.IGNORECASE)
 
-# Main Header UI Rendering
+# Render Heading
 st.markdown(f"""
 <div class='heading-text'>
     <h1 style='font-size: 26px; font-weight: 700; color: #1d1d1f;'>{lex['title']}</h1>
@@ -110,7 +110,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Layout Inputs
+# Layout Form Inputs
 col1, col2, col3 = st.columns(3)
 with col1:
     chapter_sel = st.selectbox(lex['lbl_ch'], [f"Ch{i}" for i in range(1, 19)], index=None, placeholder="- None -")
@@ -131,7 +131,6 @@ if st.button(lex['btn_run'], type="primary"):
             ch_clean = clean_key(chapter_sel.replace("Ch", ""))
             ch_formatted = f"CH{int(ch_clean):02d}"
             
-            # Secure Remote Stream from Hugging Face Dataset
             hf_audio_url = f"https://huggingface.co/datasets/jatindved/geeta-master-audios/resolve/main/master_audios/{ch_formatted}.mp3"
             
             try:
@@ -143,7 +142,7 @@ if st.button(lex['btn_run'], type="primary"):
             s_start, s_end = int(start_shloka), int(end_shloka)
             if s_start > s_end: s_start, s_end = s_end, s_start
             
-            # Master HTML report accumulator variable
+            # Master HTML report variable initialization
             final_report_html = ""
             
             for s_idx in range(s_start, s_end + 1):
@@ -183,7 +182,7 @@ if st.button(lex['btn_run'], type="primary"):
                 act_p = lex["err_p_msg"].format(char=err_pitch_char)
                 act_m = lex["err_m_msg"].format(char=err_matra_char)
                 
-                # Appending to the master string
+                # Append formatted string block into master variable safely
                 final_report_html += f"""
                 <div class='shloka-container'>
                     <div class='shloka-title'>🚩 Adhyay {ch_clean}, Shloka {s_idx}</div>
@@ -227,5 +226,5 @@ if st.button(lex['btn_run'], type="primary"):
                 </div>
                 """
             
-            # 🎯 FIX: Streamlit માં પ્રોਪર HTML રેન્ડર કરવા માટે આ કમાન્ડ અત્યંત જરૂરી છે
+            # 🎯 FIX: Render everything inside Streamlit container using unsafe_allow_html token
             st.markdown(final_report_html, unsafe_allow_html=True)
