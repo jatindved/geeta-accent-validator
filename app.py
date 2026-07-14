@@ -8,7 +8,7 @@ from html import escape
 import numpy as np
 import pandas as pd
 import streamlit as st
-import plotly.graph_objects as go  # 🎯 કસ્ટમ કલર અને કંડિશનલ ટોલરન્સ ગ્રાફ
+import plotly.graph_objects as go  # કસ્ટમ કલર અને કંડિશનલ ટોલરન્સ ગ્રાફ
 
 # ============================================================
 # PAGE CONFIGURATION
@@ -23,17 +23,17 @@ st.set_page_config(
 # LANGUAGE OPTIONS
 # ============================================================
 LANGUAGE_OPTIONS = [
-    ("ગુજરાતી", "gu"),
     ("English", "en"),
     ("हिन्दी", "hi"),
     ("অসমীয়া", "as"),
     ("বাংলা", "bn"),
+    ("ગુજરાતી", "gu"),
     ("ಕನ್ನಡ", "kn"),
     ("മലയാളം", "ml"),
     ("မৈতৈলোন্ / Manipuri", "mni"),
     ("मराठी", "mr"),
     ("नेपाली", "ne"),
-    ("ଓଡ଼િଆ", "or"),
+    ("ଓଡ଼ିଆ", "or"),
     ("सिन्धी", "sd"),
     ("தமிழ்", "ta"),
     ("తెలుగు", "te"),
@@ -48,16 +48,18 @@ I18N = {
     "gu": {
         "language": "ઇન્ટરફેસ ભાષા", "title": "🕉️ લર્ન ગીતા - શ્લોક ઉચ્ચાર અને લય વિશ્લેષક",
         "subtitle": "દ્વિલિપિ પાઠ, સમય, લય અને સ્વરની સરખામણી (કડક નિયમો સાથે)।", "chapter": "અધ્યાય પસંદ કરો",
-        "from_shloka": "શ્લોક નંબરથી", "to_shloka": "શ્લોક નંબર સુધી", "audio": "પાઠનું ઓડિયો અપલોડ કરો",
+        "from_shloka": "શ્લોક નંબરથી", "to_shloka": "શ્લોક નંબર સુધી", 
+        "audio_record_lbl": "🎙️ તમારો પાઠ અહીં લાઈવ રેકોર્ડ કરો (મોબાઈલ માટે ઉત્તમ)", 
+        "audio_upload_lbl": "📁 અથવા રેકોર્ડ કરેલી ઓડિયો ફાઇલ અપલોડ કરો", 
         "run": "🔍 પાઠનું કડક મૂલ્યાંકન શરૂ કરો", "select_required": "કૃપા કરીને અધ્યાય અને શ્લોકની મર્યાદા પસંદ કરો।",
-        "audio_required": "કૃપા કરીને ઓડિયો ફાઇલ અપલોડ કરો।", "analyzing": "પાઠનું કડક વિશ્લેષણ થઈ રહ્યું છે...",
+        "audio_required": "કૃપા કરીને શ્લોક રેકોર્ડ કરો અથવા ઓડિયો ફાઇલ અપલોડ કરો।", "analyzing": "પાઠનું કડક વિશ્લેષણ થઈ રહ્યું છે...",
         "verse_not_found": "શ્લોક મળ્યો નથી।", "chapter_word": "અધ્યાય", "shloka_word": "શ્લોક",
-        "tempo_waveform": "ગતિ અને લયની તુલના (લીલો = પ્રશિક્ષક | વાદળી = તમારો સાચો પાઠ | લાલ = ટોલરન્સ બહાર ભૂલ)", "timing_title": "📊 ૧. સમય અને ગતિનું કોષ્ટક",
+        "tempo_waveform": "ગતિ અને લયની તુલના (લીલો = પ્રશિક્ષક | વાદળી = તમારો સાચો પાઠ | લาล = ટોલરન્સ બહાર ભૂલ)", "timing_title": "📊 ૧. સમય અને ગતિનું કોષ્ટક",
         "segment": "શ્લોકનો ભાગ", "target": "લક્ષ્ય (પ્રશિક્ષક)", "actual": "વાસ્તવિક", "offset": "તફાવત",
         "speed_status": "ગતિની સ્થિતિ", "total": "કુલ", "segment_1": "ભાગ ૧", "segment_2": "ભાગ ૨",
         "slow": "ધીમું (લયમાં ફેરફાર)", "close": "લગભગ યોગ્ય", "pause_long": "વિરામ લાંબો",
         "matrix_title": "🗣️ ૨. અક્ષર અને લય વિશ્લેષણ", "trainer_rhythm": "પ્રશિક્ષકની લય", "your_chanting": "તમારો પાઠ",
-        "swar": "સ્વર", "murdha": "મૂર્ધા", "matra": "માત્રા", "rhythm": "લય", "low_scale": "નીચો સ્વર", "unwanted_pause": "અનાվશ્યક વિરામ",
+        "swar": "સ્વર", "murdha": "มૂર્ધા", "matra": "માત્રા", "rhythm": "લય", "low_scale": "નીચો સ્વર", "unwanted_pause": "અનાવશ્યક વિરામ",
         "pitch_title": "🎵 ૩. સ્વર / પિચ ટ્યુનિંગ ગ્રાફ (કડક સરખામણી)", "trainer_melody": "પ્રશિક્ષકનો લક્ષ્ય સ્વર", "your_scale": "તમારો સ્વર",
         "corrections_title": "📝 ૪. અક્ષરવાર સુધારા અને માર્ગદર્શન", "target_syllable": "લક્ષિત અક્ષર", "error_type": "ભૂલનો પ્રકાર", "guidance": "સુધારાનું માર્ગદર્શન",
         "pitch_mismatch": "સ્વરમાં તફાવત (સ્વર ભૂલ)", "duration_error": "માત્રાની ભૂલ (દીર્ઘ/હ્રસ્વ દોષ)",
@@ -74,8 +76,9 @@ I18N = {
         "language": "Interface Language", "title": "🕉️ Learn Geeta - Shloka Accent & Rhythm Validator",
         "subtitle": "Strict dual-script chanting, timing, rhythm and pitch validation.",
         "chapter": "Select Chapter", "from_shloka": "From Shloka No.", "to_shloka": "To Shloka No.",
-        "audio": "Upload Chanting Audio", "run": "🔍 Run Strict Chanting Evaluation",
-        "select_required": "Please select the chapter and shloka range.", "audio_required": "Please upload an audio file.",
+        "audio_record_lbl": "🎙️ Record Chanting Live (Best for Mobile)",
+        "audio_upload_lbl": "📁 Or Upload Audio File", "run": "🔍 Run Strict Chanting Evaluation",
+        "select_required": "Please select the chapter and shloka range.", "audio_required": "Please record or upload an audio file.",
         "analyzing": "Running strict analysis on chanting performance...", "verse_not_found": "Verse text not found.",
         "chapter_word": "Chapter", "shloka_word": "Shloka", "tempo_waveform": "Tempo Comparison Chart (Green=Trainer, Blue=Correct, Red=Tolerance Out Error)",
         "timing_title": "📊 1. Timing & Tempo Table", "segment": "Verse Segment", "target": "Target (Trainer)",
@@ -150,20 +153,17 @@ def clean_key(value) -> str:
 
 @st.cache_data
 def load_geeta_databases():
-    hin_path, eng_path = "Geeta - Hin.csv", "Geeta - Eng.csv"
     hin_dict, eng_dict = {}, {}
-    if os.path.exists(hin_path):
-        df = pd.read_csv(hin_path)
+    if os.path.exists("Geeta - Hin.csv"):
+        df = pd.read_csv("Geeta - Hin.csv")
         for _, row in df.iterrows():
             if len(row) >= 3 and not pd.isna(row.iloc[0]) and not pd.isna(row.iloc[1]):
-                key = f"{clean_key(row.iloc[0])}_{clean_key(row.iloc[1])}"
-                hin_dict[key] = str(row.iloc[2]).replace("\n", " ").strip()
-    if os.path.exists(eng_path):
-        df = pd.read_csv(eng_path)
+                hin_dict[f"{clean_key(row.iloc[0])}_{clean_key(row.iloc[1])}"] = str(row.iloc[2]).replace("\n", " ").strip()
+    if os.path.exists("Geeta - Eng.csv"):
+        df = pd.read_csv("Geeta - Eng.csv")
         for _, row in df.iterrows():
             if len(row) >= 3 and not pd.isna(row.iloc[0]) and not pd.isna(row.iloc[1]):
-                key = f"{clean_key(row.iloc[0])}_{clean_key(row.iloc[1])}"
-                eng_dict[key] = str(row.iloc[2]).replace("\n", " ").strip()
+                eng_dict[f"{clean_key(row.iloc[0])}_{clean_key(row.iloc[1])}"] = str(row.iloc[2]).replace("\n", " ").strip()
     return hin_dict, eng_dict
 
 def split_into_syllables(word: str) -> list[str]:
@@ -179,7 +179,7 @@ def replace_first(text: str, old: str, new: str) -> str:
     return text.replace(old, new, 1)
 
 # ============================================================
-# MAIN MAIN INTERFACE IMPLEMENTATION
+# MAIN INTERFACE IMPLEMENTATION
 # ============================================================
 selected_language_name = st.selectbox("🌐 Interface Language", options=[name for name, _ in LANGUAGE_OPTIONS], index=0)
 language_code = LANGUAGE_NAME_TO_CODE[selected_language_name]
@@ -198,7 +198,12 @@ with col2:
 with col3:
     end_shloka = st.selectbox(lex["to_shloka"], options=list(range(1, 79)), index=None, placeholder="-")
 
-student_audio = st.file_uploader(lex["audio"], type=["mp3", "wav", "m4a", "aac"])
+# 🎯 🎯 FIX: ડ્યુઅલ ઓડિયો ઇનપુટ સિસ્ટમ (મોબાઈલ માટે લાઈવ માઈક અને અપલોડ બંને ઓપ્શન)
+student_audio_live = st.audio_input(lex["audio_record_lbl"])
+student_audio_file = st.file_uploader(lex["audio_upload_lbl"], type=["mp3", "wav", "m4a", "aac"])
+
+# છેલ્લું કોઈ પણ એક ઇનપુટ સિલેક્ટ કરવા માટેનું લોજિક
+student_audio = student_audio_live if student_audio_live is not None else student_audio_file
 
 st.markdown(f'<div dir="{page_direction}" class="demo-notice">{escape(lex["demo_notice"])}</div>', unsafe_allow_html=True)
 
@@ -275,12 +280,8 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                 
                 st.markdown(f"<div dir='{page_direction}' class='tempo-label'>{escape(lex['tempo_waveform'])}:</div>", unsafe_allow_html=True)
                 
-                # ============================================================
-                # 🎯 🎯 FIX: ડાયનેમિક ઓરિજિનલ શ્લોક શબ્દો ગ્રાફ એક્સિસ (X-AXIS) પર લોક
-                # ============================================================
+                # ડાયનેમિક ઓરિજિનલ શ્લોક શબ્દો ગ્રાફ એક્સિસ (X-AXIS) પર લોક
                 num_words = len(dev_words)
-                
-                # સિક્યોરિટી ક્લીનિંગ અને ક્લીન ડિસ્પ્લે લેબલ્સ
                 word_labels = [w.replace("।", "").replace("॥", "").strip() for w in dev_words]
                 
                 trainer_bars = rng.uniform(1.2, 1.8, size=num_words)
@@ -302,43 +303,29 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                         student_colors.append("#0071e3") # 🔵 પ્રોફેશનલ બ્લુ (સાચો લય)
 
                 fig = go.Figure()
-                
-                # ટ્રેનર સંદર્ભ સ્તંભ (લીલો)
                 fig.add_trace(go.Bar(
-                    x=word_labels,
-                    y=trainer_bars,
-                    name='Trainer Standard',
-                    marker_color='#34c759',
-                    hovertemplate='ટ્રેનર લય: %{y:.2f}s<extra></extra>'
+                    x=word_labels, y=trainer_bars, name='Trainer Standard',
+                    marker_color='#34c759', hovertemplate='ટ્રેનર લય: %{y:.2f}s<extra></extra>'
                 ))
-                
-                # સાધક પર્ફોર્મન્સ સ્તંભ (કંડિશનલ કલર્ડ)
                 fig.add_trace(go.Bar(
-                    x=word_labels,
-                    y=student_bars,
-                    name='Your Performance',
-                    marker_color=student_colors,
-                    hovertemplate='তમારો લય: %{y:.2f}s<extra></extra>'
+                    x=word_labels, y=student_bars, name='Your Performance',
+                    marker_color=student_colors, hovertemplate='તમારો લય: %{y:.2f}s<extra></extra>'
                 ))
 
                 fig.update_layout(
-                    barmode='group',
-                    height=240,
-                    margin=dict(l=20, r=20, t=10, b=30),
+                    barmode='group', height=240, margin=dict(l=20, r=20, t=10, b=30),
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
                     yaxis=dict(title="સમય (સેકન્ડ)", gridcolor="#e5e5ea"),
-                    xaxis=dict(gridcolor="rgba(0,0,0,0)", tickangle=-25) # શબ્દો વાંચવામાં સરળ રહે એટલે ક્રોસ એંગલ આપ્યો
+                    xaxis=dict(gridcolor="rgba(0,0,0,0)", tickangle=-25)
                 )
                 
                 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 
-                # કસ્ટમ એલર્ટ બોક્સ વિથ ઓરિજિનલ વર્ડ ફ્લેગ
                 faulty_word = word_labels[error_index]
                 st.markdown(f"""
                 <div style='background: #fff3cd; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #856404; margin-bottom: 20px; border-left: 4px solid #ff3b30;'>
-                    ⚠️ <b>Tolerance Error High Alert:</b> શ્લોકના ચોક્કસ શબ્દ <b>"{faulty_word}"</b> પર તમારો પાઠ નિયત લય મર્યાદા (૦.૫ સેકન્ડ ટોલરન્સ) કરતાં <b>+{student_bars[error_index]-trainer_bars[error_index]:.2f}s</b> વધારે લાંબો ગયો છે, તેથી તે સ્તંભ આપોઆપ <b>લાલ (Red)</b> રંગમાં બદલાઈ ગયો છે.
+                    ⚠️ <b>Tolerance Error High Alert:</b> શ્લોકના ચોક્કસ શબ્દ <b>"{faulty_word}"</b> પર તમારો પાઠ નિયત લય મર્યાદા (૦.૫ સેકન્ડ ટોલરન્સ) કરતાં <b>+{student_bars[error_index]-trainer_bars[error_index]:.2f}s</b> વધારે લાંબો ગયો છે, તેથી તે સ્तંભ આપોઆપ <b>લાલ (Red)</b> રંગમાં બદલાઈ ગયો છે.
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -392,5 +379,5 @@ if st.button(lex["run"], type="primary", use_container_width=True):
                         </tbody>
                     </table>
                 </div>
-                <hr style="margin:30px 0; border:1px solid #e5e5ea Suspend;"/>
+                <hr style="margin:30px 0; border:1px solid #e5e5ea;"/>
                 """, unsafe_allow_html=True)
